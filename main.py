@@ -14,18 +14,20 @@ class App(ctk.CTk):
         self.title("SortYoutubeComments")
         self.geometry("700x600")
 
+        # UIの設置
         self.setup_ui()
 
+    # UIの関数
     def setup_ui(self):
+        # IDを入力させるエントリーボックス
         self.label1 = ctk.CTkLabel(self, text='enter youtube ID')
         self.label1.pack(pady=5)
-
         self.entry1 = ctk.CTkEntry(self, width=300)
         self.entry1.pack(pady=5)
 
+        # リミット数を入力させるエントリーボックス
         self.label2 = ctk.CTkLabel(self, text='enter like_limit')
         self.label2.pack(pady=5)
-        
         self.entry2 = ctk.CTkEntry(self, width=300)
         self.entry2.pack(pady=5)
 
@@ -33,30 +35,39 @@ class App(ctk.CTk):
         self.button = ctk.CTkButton(self, text='GET', command=self.button_action)
         self.button.pack(pady=10)
 
+        # 実行結果を示す場所
         self.output = ctk.CTkTextbox(self, width=650, height=400)
         self.output.pack(pady=10, padx=10)
-        self.output.configure(state='disabled')
+        self.output.configure(state='disabled') # 最初は編集不可
 
+    # 実行ボタンを押した時のアクション関数
     def button_action(self):
+
+        # 入力したものの取得
         video_id = self.entry1.get()
         limit_str = self.entry2.get()
-        limit = int(limit_str) if limit_str else 0
-
+        if int(limit_str) == 0:
+            limit = 0
+        else:
+            limit = int(limit_str)
+        
+        # IDが入力されていなかったらエラーを表示する関数
         if not video_id:
             messagebox.showwarning('error', 'enter keyword !!!')
             return     
         
-        # UIの状態変更
-        self.button.configure(state='disabled')
+        # UIのリセット
+        self.button.configure(state='disabled') # ボタンを使えなくする
         self.output.configure(state='normal')
-        self.output.delete('1.0', "end")
+        self.output.delete('1.0', "end") # 白紙に戻す
         self.output.insert("end", "データを取得中...（件数が多いと時間がかかります）\n")
 
-        # サブスレッドの起動
+        # サブスレッドの起動（スレッドを立てて、fetch_taskを裏で実行する)
         thread = threading.Thread(target=self.fetch_task, args=(video_id, limit))
         thread.daemon = True
         thread.start()
     
+    # 裏でコメント取得
     def fetch_task(self, video_id, limit):
         try:
             # APIの進捗を受け取るコールバック関数
@@ -74,10 +85,12 @@ class App(ctk.CTk):
             self.after(0, lambda: self.button.configure(state='normal'))
             self.after(0, lambda: self.output.configure(state='disabled'))
     
+    # マルチスレッド時のメッセージ表示関数
     def show_msg(self, msg):
         self.output.insert("end", msg)
         self.output.see("end")
 
+    # データを取得し終わった後に結果を画面に表示する関数
     def display_result(self, comments):
         self.output.delete('1.0', "end")
         if not comments:

@@ -6,7 +6,6 @@ import os
 env_path = Path(__file__).parent.parent / ".env"
 # 1. .envの内容を読み込む
 load_dotenv(dotenv_path=env_path)
-
 # 2. os.getenv("変数名") で値を取り出す
 api_key = os.getenv("YOUTUBE_API_KEY")
 
